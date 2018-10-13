@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using TwoFactorAuthentication.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace TwoFactorAuthentication
 {
@@ -45,13 +46,23 @@ namespace TwoFactorAuthentication
                 options.Password.RequiredUniqueChars = 1;
             });
 
+ 
+
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>()
+            services.AddDefaultIdentity<IdentityUser>(config => { config.SignIn.RequireConfirmedEmail = true; })
+                .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+
+            // Add application services.
+            services.AddTransient<IEmailSender, MyEmailSender>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.Configure<AuthMessageSenderOptions>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
